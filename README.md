@@ -14,48 +14,24 @@ Download A-share stock reports from cninfo.com.cn and upload them to NotebookLM 
 
 ## 🚀 Usage
 
-### Installation (Recommended)
+### Installation
 
-1. Use `npx` to install this skill directly to your agent:
+1. **Install the Skill**
+   Run this command in your agent's terminal:
 
    ```bash
    npx skills add jarodise/CNinfo2Notebookllm
    ```
 
-2. Install dependencies (First time only):
+2. **Install Dependencies** (First time only)
+   Go to the installed skill directory (e.g., `~/.gemini/antigravity/skills/cninfo-to-notebooklm`) and run the setup script:
 
    ```bash
-   # Enter the skill directory (e.g., ~/.gemini/antigravity/skills/cninfo-to-notebooklm)
-   cd <skill_directory>
-   
-   # Run the setup script
-   ./install.sh
-   # OR
-   pip install -r requirements.txt && playwright install chromium
+   cd <skill_directory> && ./install.sh
    ```
 
-3. Authenticate with NotebookLM:
-
-   ```bash
-   notebooklm login
-   ```
-
-### Manual Installation
-
-1. Clone this repository:
-
-   ```bash
-   git clone https://github.com/jarodise/CNinfo2Notebookllm.git
-   cd CNinfo2Notebookllm
-   ```
-
-2. Run setup:
-
-   ```bash
-   ./install.sh
-   ```
-
-3. Authenticate:
+3. **Authenticate**
+   If you haven't used NotebookLM before, log in:
 
    ```bash
    notebooklm login
@@ -86,9 +62,9 @@ This tool is designed to be easily used by AI agents (Claude, ChatGPT, etc.) tha
 
 ```
 cninfo-to-notebooklm/
-├── skill.yaml          # Skill definition (for compatible agents)
 ├── package.json        # Project metadata
 ├── SKILL.md            # LLM Instructions / Context
+├── install.sh          # Dependency installation script
 ├── scripts/
 │   ├── run.py          # Main orchestration script
 │   ├── download.py     # Download logic
