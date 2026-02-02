@@ -1,4 +1,4 @@
-# 📊 CNinfo 财报分析助手 (CNinfo to NotebookLM)
+# � CNinfo to NotebookLM
 
 自动下载中国 A 股上市公司年报/季报，并上传至 Google NotebookLM 进行 AI 驱动的深度财务分析。
 
