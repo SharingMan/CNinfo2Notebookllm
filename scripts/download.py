@@ -15,7 +15,9 @@ import random
 import httpx
 
 # Stock database location
-STOCKS_JSON = os.path.join(os.path.dirname(__file__), "..", "data", "stocks.json")
+STOCKS_JSON = os.path.join(
+    os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "assets", "stocks.json"
+)
 
 
 class CnInfoDownloader:

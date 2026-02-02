@@ -131,7 +131,7 @@ def main():
     # Configure custom prompt
     prompt_path = os.path.join(
         os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
-        "data",
+        "assets",
         "financial_analyst_prompt.txt",
     )
     if os.path.exists(prompt_path):

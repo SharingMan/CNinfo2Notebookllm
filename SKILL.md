@@ -53,7 +53,7 @@ This script handles everything:
 
 1. Downloads reports to a temp directory.
 2. Creates a NotebookLM notebook.
-3. Configures the notebook with `data/financial_analyst_prompt.txt`.
+3. Configures the notebook with `assets/financial_analyst_prompt.txt`.
 4. Uploads all PDFs.
 5. Cleans up temp files.
 
@@ -68,7 +68,7 @@ Provide:
 ## Configuration
 
 The skill uses a custom system prompt located at:
-`~/.gemini/antigravity/skills/cninfo-to-notebooklm/data/financial_analyst_prompt.txt`
+`assets/financial_analyst_prompt.txt`
 
 This prompt configures NotebookLM to act as a "Financial Report Analyst" based on "Hand-holding Financial Reporting" methodology.
 
