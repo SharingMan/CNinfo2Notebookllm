@@ -1,93 +1,93 @@
-# 📊 CNinfo to NotebookLM
+# 📊 CNinfo 财报分析助手 (CNinfo to NotebookLM)
 
-Download annual/periodic reports for China A-share stocks and upload them to Google NotebookLM for AI-powered financial analysis.
+自动下载中国 A 股上市公司年报/季报，并上传至 Google NotebookLM 进行 AI 驱动的深度财务分析。
 
-> **Note**: This tool creates a specialized "Financial Analyst" persona in NotebookLM, based on the methodology from "Hand-holding Financial Reporting".
+> 💡 **注**：本工具会自动为 NotebookLM 配置基于《手把手教你读财报》方法论的专业“财务分析师”角色，帮助你进行财务排雷和估值分析。
 
-## ✨ Features
+## ✨ 核心功能
 
-- 📥 **Smart Download**: Fetches last 5 years of annual reports + current year's periodic reports (Q1/Q2/Q3).
-- 🤖 **AI Analyst Persona**: Automatically configures the notebook with a professional "Financial Analyst" system prompt for deep mining.
-- 📦 **Automated Workflow**: One command to download, create notebook, configure persona, and upload all files.
-- 🧹 **Auto Cleanup**: Keeps disk clean by removing temporary PDF files after upload.
-- 🔐 **One-Time Auth**: Uses `notebooklm-py` with browser-based check-in for stable authentication.
+- 📥 **智能下载**: 自动抓取近 5 年年报 + 当年所有定期报告（一季报/中报/三季报）。
+- 🤖 **AI 分析师角色**: 自动植入专业 System Prompt，进行排雷、估值和击球区判断。
+- 📦 **全自动工作流**: 一键完成下载、笔记本创建、角色配置和文件上传。
+- 🧹 **自动清理**: 上传后自动清理临时 PDF 文件，保持磁盘整洁。
+- 🔐 **稳定鉴权**: 使用 `notebooklm-py` 配合浏览器自动化登录，解决 Cookie 过期问题。
 
-## 🎯 Use as Claude Skill (Recommended)
+## 🎯 作为 Claude Skill 使用 (推荐)
 
-### Installation
+### 安装
 
 ```bash
-# 1. Navigate to your skills directory (e.g. ~/.gemini/antigravity/skills)
+# 1. 进入你的 skills 目录 (例如 ~/.gemini/antigravity/skills)
 cd ~/.gemini/antigravity/skills
 
-# 2. Clone the repository
+# 2. 克隆仓库
 git clone https://github.com/jarodise/CNinfo2Notebookllm.git cninfo-to-notebooklm
 
-# 3. Install dependencies
+# 3. 安装依赖
 cd cninfo-to-notebooklm
 pip install -r requirements.txt
 playwright install chromium
 
-# 4. Complete initial login (one-time)
+# 4. 完成初始登录 (仅需一次)
 notebooklm login
 ```
 
-### Usage
+### 使用方法
 
-Simply tell Claude Code:
-
-```text
-Use cninfo-to-notebooklm skill to analyze 600519
-```
-
-or
+直接告诉 Claude Code：
 
 ```text
-Run cninfo-to-notebooklm for Ping An Bank
+使用 cninfo-to-notebooklm 技能分析 600519
 ```
 
-Claude will automatically:
+或者
 
-1. Look up stock code (if name provided)
-2. Download relevant reports
-3. Create & Configure NotebookLM
-4. Upload files
-5. Return the Notebook link
+```text
+运行 cninfo-to-notebooklm 分析平安银行
+```
+
+Claude 将会自动：
+
+1. 查找股票代码（如果提供的是名称）
+2. 下载相关历史财报
+3. 创建并配置 NotebookLM 笔记本
+4. 上传所有 PDF 文件
+5. 返回笔记本链接
 
 ---
 
-## 🛠️ Manual Usage
+## 🛠️ 手动使用
 
-You can also run the scripts directly from the terminal:
+你也可以直接在终端运行脚本：
 
 ```bash
-# Analyze by Stock Code
+# 按股票代码分析
 python3 scripts/run.py 000519
 
-# Analyze by Stock Name
+# 按股票名称分析
 python3 scripts/run.py "贵州茅台"
 ```
 
-## 📂 Project Structure
+## 📂 项目结构
 
 ```
 cninfo-to-notebooklm/
-├── skill.yaml          # Skill definition
-├── package.json        # Project metadata
-├── SKILL.md            # LLM Instructions
+├── skill.yaml          # Skill 定义文件
+├── package.json        # 项目元数据
+├── SKILL.md            # LLM 指令文档
 ├── scripts/
-│   ├── run.py          # Main orchestration
-│   ├── download.py     # Download logic
-│   └── upload.py       # NotebookLM interaction
+│   ├── run.py          # 主流程控制
+│   ├── download.py     # 巨潮资讯下载逻辑
+│   └── upload.py       # NotebookLM 交互逻辑
 └── assets/
-    ├── financial_analyst_prompt.txt  # System prompt
-    └── stocks.json                   # Stock database
+    ├── financial_analyst_prompt.txt  # AI 分析师 Prompt
+    └── stocks.json                   # A股股票数据库
 ```
 
-## 🔧 Configuration
+## 🔧 配置
 
-The "Financial Analyst" persona is defined in `assets/financial_analyst_prompt.txt`. You can modify this file to change how the AI analyzes the financial reports.
+“财务分析师”的角色定义在 `assets/financial_analyst_prompt.txt` 文件中。你可以修改此文件来定制 AI 分析财报的逻辑和关注点。
 
-## ⚠️ Disclaimer
+## ⚠️ 免责声明
 
-This tool is for educational and research purposes only. Please ensure you comply with the terms of service of cninfo.com.cn and Google NotebookLM. The financial analysis provided by the AI persona should not be considered professional investment advice.
+本工具仅供教育和研究使用。请确保遵守巨潮资讯网 (cninfo.com.cn) 和 Google NotebookLM 的服务条款。AI 角色提供的财务分析仅供参考，不构成专业投资建议。
