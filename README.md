@@ -1,79 +1,79 @@
 # CNinfo to NotebookLM
 
-Download A-share stock reports from cninfo.com.cn and upload them to NotebookLM for AI-powered analysis with a specialized "Financial Analyst" persona.
+从巨潮资讯网自动下载 A 股上市公司财报，并上传至 Google NotebookLM，利用 AI 驱动的“财务分析师”角色进行深度分析。
 
-> 💡 **Note**: This tool automatically configures NotebookLM with a professional "Financial Analyst" persona based on the "Hand-holding Financial Reporting" methodology.
+> 💡 **提示**: 本工具会自动为 NotebookLM 配置一个专业的“财务分析师”角色（基于《手把手教你读财报》方法论），帮助你进行财报排雷和估值分析。
 
-## ✨ Features
+## ✨ 核心功能
 
-- 📥 **Smart Download**: Automatically fetches annual reports (last 5 years) + all periodic reports for the current year (Q1/Semi/Q3).
-- 🤖 **AI Analyst Persona**: Auto-injects a specialized System Prompt for risk detection, valuation, and "strike zone" analysis.
-- 📦 **Automated Workflow**: One-step download, notebook creation, persona configuration, and file upload.
-- 🧹 **Auto Cleanup**: Automatically removes temporary PDF files after upload.
-- 🔐 **Stable Auth**: Uses `notebooklm-py` with browser automation for reliable authentication.
+- 📥 **智能下载**: 自动下载近 5 年年报 + 当年所有定期报告（一季报、中报、三季报）。
+- 🤖 **AI 分析师**: 自动植入专用 System Prompt，进行风险检测、估值分析和“击球区”判断。
+- 📦 **全自动流程**: 一键完成下载、笔记本创建、角色配置和文件上传。
+- 🧹 **自动清理**: 上传完成后自动清理临时 PDF 文件，保持整洁。
+- 🔐 **稳定登录**: 使用 `notebooklm-py` 配合浏览器自动化，确保鉴权稳定可靠。
 
-## 🚀 Usage
+## 🚀 使用方法
 
-### Installation
+### 安装步骤
 
-1. **Install the Skill**
-   Run this command in your agent's terminal:
+1. **安装 Skill**
+   在你的 Agent 终端中运行以下命令：
 
    ```bash
    npx skills add jarodise/CNinfo2Notebookllm
    ```
 
-2. **Install Dependencies** (First time only)
-   Go to the installed skill directory (e.g., `~/.gemini/antigravity/skills/cninfo-to-notebooklm`) and run the setup script:
+2. **安装依赖** (仅首次需要)
+   进入安装好的 skill 目录 (通常在 `~/.gemini/antigravity/skills/cninfo-to-notebooklm` 或类似位置)，然后运行设置脚本：
 
    ```bash
    cd <skill_directory> && ./install.sh
    ```
 
-3. **Authenticate**
-   If you haven't used NotebookLM before, log in:
+3. **认证登录**
+   如果你之前没用过 NotebookLM，请先登录：
 
    ```bash
    notebooklm login
    ```
 
-### Running the Tool
+### 运行工具
 
-You can run the tool directly from the terminal:
+你可以直接在终端运行工具：
 
 ```bash
-# Analyze by Stock Code
+# 按股票代码分析
 python3 scripts/run.py 600519
 
-# Analyze by Stock Name
+# 按股票名称分析
 python3 scripts/run.py "贵州茅台"
 ```
 
-### Using with AI Agents
+### 配合 AI Agent 使用
 
-This tool is designed to be easily used by AI agents (Claude, ChatGPT, etc.) that have shell access.
+本工具设计为可供拥有 Shell 权限的 AI Agent (如 Claude, ChatGPT 等) 直接调用。
 
-**Agent Instructions:**
+**Agent 指令:**
 
-1. Execute `python3 scripts/run.py <stock_name_or_code>`
-2. Parse the JSON output (if needed) or read the standard output for the Notebook URL.
+1. 执行 `python3 scripts/run.py <股票名称或代码>`
+2. 解析 JSON 输出 (如有需要) 或直接读取标准输出中的 Notebook 链接。
 
-## 📂 Project Structure
+## 📂 项目结构
 
 ```
 cninfo-to-notebooklm/
-├── package.json        # Project metadata
-├── SKILL.md            # LLM Instructions / Context
-├── install.sh          # Dependency installation script
+├── package.json        # 项目元数据
+├── SKILL.md            # LLM 指令和上下文说明
+├── install.sh          # 依赖安装脚本
 ├── scripts/
-│   ├── run.py          # Main orchestration script
-│   ├── download.py     # Download logic
-│   └── upload.py       # NotebookLM interaction logic
+│   ├── run.py          # 主流程控制脚本
+│   ├── download.py     # 巨潮资讯下载逻辑
+│   └── upload.py       # NotebookLM 交互逻辑
 └── assets/
-    ├── financial_analyst_prompt.txt  # System Prompt
-    └── stocks.json                   # Stock database
+    ├── financial_analyst_prompt.txt  # AI 分析师 System Prompt
+    └── stocks.json                   # 股票数据库
 ```
 
-## ⚠️ Disclaimer
+## ⚠️ 免责声明
 
-For educational and research purposes only. Please ensure compliance with cninfo.com.cn and Google NotebookLM terms of service. Financial analysis provided by AI is for reference only and does not constitute investment advice.
+本工具仅供教育和研究使用。请确保遵守巨潮资讯网 (cninfo.com.cn) 和 Google NotebookLM 的服务条款。AI 提供的财务分析仅供参考，不构成任何投资建议。
