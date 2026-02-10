@@ -13,10 +13,10 @@ if ! command -v python3 &> /dev/null; then
 fi
 
 echo "📦 Installing dependencies from requirements.txt..."
-pip install -r requirements.txt
+python3 -m pip install -r requirements.txt
 
 echo "🌐 Installing Chromium for Playwright..."
-playwright install chromium
+python3 -m playwright install chromium
 
 echo "✅ Installation complete!"
 echo ""
