@@ -274,35 +274,51 @@ async def search_stocks(query: str = Query(..., min_length=1), limit: int = 10):
 @app.get("/api/open-folder")
 async def open_folder(path: str = Query(...)):
     """
-    Open a folder in the system file manager
-    Security: Only allows opening folders within the project directory
+    Open a folder in the system file manager (local only)
     """
-    import subprocess
-    import platform
+    return {"success": False, "error": "云端版本不支持打开本地文件夹，请使用下载功能"}
+
+
+@app.get("/api/download-zip")
+async def download_zip(path: str = Query(...)):
+    """
+    Create and download a ZIP archive of the folder
+    """
+    import zipfile
+    import io
 
     try:
         # Normalize and validate path
         abs_path = os.path.abspath(os.path.expanduser(path))
         cwd = os.getcwd()
 
-        # Security check: must be within project directory
+        # Security check
         if not abs_path.startswith(cwd):
-            return {"success": False, "error": "Invalid path: outside project directory"}
+            return {"success": False, "error": "Invalid path"}
 
-        # Check if path exists
         if not os.path.exists(abs_path):
-            return {"success": False, "error": f"Path does not exist: {path}"}
+            return {"success": False, "error": "Path does not exist"}
 
-        # Open folder based on OS
-        system = platform.system()
-        if system == "Darwin":  # macOS
-            subprocess.Popen(["open", abs_path])
-        elif system == "Windows":
-            subprocess.Popen(["explorer", abs_path])
-        else:  # Linux
-            subprocess.Popen(["xdg-open", abs_path])
+        # Create ZIP in memory
+        zip_buffer = io.BytesIO()
+        folder_name = os.path.basename(abs_path)
 
-        return {"success": True, "path": abs_path}
+        with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
+            for root, dirs, files in os.walk(abs_path):
+                for file in files:
+                    file_path = os.path.join(root, file)
+                    arc_name = os.path.join(folder_name, os.path.relpath(file_path, abs_path))
+                    zip_file.write(file_path, arc_name)
+
+        zip_buffer.seek(0)
+
+        return StreamingResponse(
+            zip_buffer,
+            media_type="application/zip",
+            headers={
+                "Content-Disposition": f"attachment; filename={folder_name}.zip"
+            }
+        )
 
     except Exception as e:
         return {"success": False, "error": str(e)}
