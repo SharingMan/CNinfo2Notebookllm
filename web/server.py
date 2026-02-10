@@ -312,5 +312,6 @@ if __name__ == "__main__":
     import uvicorn
     # Support cloud deployment (Railway, etc.)
     port = int(os.environ.get("PORT", 8000))
-    host = os.environ.get("HOST", "127.0.0.1")
+    # Use 0.0.0.0 for cloud, 127.0.0.1 for local
+    host = os.environ.get("HOST", "0.0.0.0")
     uvicorn.run(app, host=host, port=port)
