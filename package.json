@@ -1,7 +1,7 @@
 {
-    "name": "cninfo-to-notebooklm",
+    "name": "财报AI助手",
     "version": "1.0.0",
-    "description": "Download annual and periodic reports for China A-share stocks from cninfo.com.cn and upload them to NotebookLM.",
+    "description": "财报AI助手 - 智能下载A股/港股/美股财报，AI深度分析",
     "scripts": {
         "start": "python3 scripts/run.py",
         "analyze": "python3 scripts/run.py"

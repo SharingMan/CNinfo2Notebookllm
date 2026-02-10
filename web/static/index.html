@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>财报AI助手 | 智能财务分析</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Inter:wght@300;400;500;600&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📊</text></svg>">
+</head>
+
+<body>
+    <div class="background-blobs">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+        <div class="blob blob-3"></div>
+    </div>
+
+    <main class="glass-container">
+        <header>
+            <div class="logo">
+                <span class="icon">🤖</span>
+                <h1>财报AI助手</h1>
+            </div>
+            <p class="subtitle">极速获取 5 年财报及最新公告，自动生成 AI 分析指令包</p>
+        </header>
+
+        <section class="search-section">
+            <div class="input-group search-wrapper">
+                <input type="text" id="stockInput" placeholder="输入代码/名称/拼音首字母 (如: 600519、茅台、gzmt、AAPL)" autocomplete="off">
+                <div id="searchSuggestions" class="search-suggestions hidden"></div>
+                <button id="startBtn">
+                    <span class="btn-text">获取资料包</span>
+                    <span class="btn-loader"></span>
+                </button>
+            </div>
+            <div class="tags">
+                <span>热门示例:</span>
+                <button onclick="setInput('600519')">贵州茅台</button>
+                <button onclick="setInput('00700')">腾讯控股</button>
+                <button onclick="setInput('AAPL')">AAPL</button>
+                <button onclick="setInput('TSLA')">TSLA</button>
+                <button onclick="setInput('NVDA')">NVDA</button>
+            </div>
+        </section>
+
+        <section id="progressSection" class="progress-section hidden">
+            <div class="status-header">
+                <div class="status-info">
+                    <span id="statusIcon">🔄</span>
+                    <span id="statusText">准备中...</span>
+                </div>
+                <div class="progress-percent" id="progressPercent">0%</div>
+            </div>
+
+            <div class="progress-bar-container">
+                <div class="progress-bar" id="progressBar"></div>
+            </div>
+
+            <div class="terminal" id="terminal">
+                <div class="terminal-line typing">等待任务开始...</div>
+            </div>
+        </section>
+
+        <section id="resultSection" class="result-section hidden">
+            <div class="result-card">
+                <div class="success-icon">🎉</div>
+                <h3>资料包准备就绪！</h3>
+                <p id="resultDetails">已成功抓取财报、公告及分析指令。</p>
+                <div class="actions">
+                    <a id="notebookLink" href="#" target="_blank" class="primary-btn">已存至本地</a>
+                    <button onclick="resetUI()" class="secondary-btn">寻找下一只股票</button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="footer-content">
+            <p>&copy; 2026 财报AI助手</p>
+            <div class="status-pills">
+                <span class="pill"><span class="dot green"></span> 系统在线</span>
+                <span class="pill"><span class="dot blue"></span> 极速模式已开启</span>
+            </div>
+        </div>
+    </footer>
+
+    <script src="/static/js/main.js"></script>
+</body>
+
+</html>

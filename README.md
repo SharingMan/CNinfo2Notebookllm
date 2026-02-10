@@ -1,4 +1,4 @@
-# CNinfo to NotebookLM
+# 财报AI助手 (CNinfo to NotebookLM)
 
 从巨潮资讯网自动下载 A 股上市公司财报，并上传至 Google NotebookLM，利用 AI 驱动的“财务分析师”角色进行深度分析。
 
