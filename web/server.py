@@ -300,11 +300,12 @@ async def download_zip(path: str = Query(...)):
         if not os.path.exists(abs_path):
             return {"success": False, "error": "Path does not exist"}
 
-        # Create ZIP in memory
+        # Create ZIP in memory with UTF-8 support for Chinese filenames
         zip_buffer = io.BytesIO()
         folder_name = os.path.basename(abs_path)
 
-        with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
+        # Python 3.11+ supports metadata_encoding
+        with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED, metadata_encoding='utf-8') as zip_file:
             for root, dirs, files in os.walk(abs_path):
                 for file in files:
                     file_path = os.path.join(root, file)
