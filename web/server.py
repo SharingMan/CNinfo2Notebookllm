@@ -6,6 +6,7 @@ import logging
 import tempfile
 import shutil
 import datetime
+import urllib.parse
 from fastapi import FastAPI, Request, Query
 from fastapi.responses import StreamingResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
@@ -332,11 +333,17 @@ async def download_zip(path: str = Query(...)):
         import asyncio
         asyncio.create_task(cleanup_after_download())
 
+        # Encode filename for Content-Disposition header (RFC 5987)
+        # Use safe ASCII filename for legacy clients, UTF-8 for modern clients
+        safe_filename = folder_name.encode('ascii', 'ignore').decode() or "financial_reports"
+        encoded_filename = urllib.parse.quote(folder_name, safe='')
+        content_disposition = f"attachment; filename=\"{safe_filename}.zip\"; filename*=UTF-8''{encoded_filename}.zip"
+
         return StreamingResponse(
             zip_buffer,
             media_type="application/zip",
             headers={
-                "Content-Disposition": f"attachment; filename={folder_name}.zip"
+                "Content-Disposition": content_disposition
             }
         )
 
