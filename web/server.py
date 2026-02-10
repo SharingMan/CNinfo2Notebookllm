@@ -304,13 +304,21 @@ async def download_zip(path: str = Query(...)):
         zip_buffer = io.BytesIO()
         folder_name = os.path.basename(abs_path)
 
-        # Python 3.11+ supports metadata_encoding
-        with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED, metadata_encoding='utf-8') as zip_file:
+        with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
+            # Enable UTF-8 filenames for ZIP
             for root, dirs, files in os.walk(abs_path):
                 for file in files:
                     file_path = os.path.join(root, file)
                     arc_name = os.path.join(folder_name, os.path.relpath(file_path, abs_path))
-                    zip_file.write(file_path, arc_name)
+                    # Write with UTF-8 flag
+                    zip_info = zipfile.ZipInfo(filename=arc_name)
+                    zip_info.compress_type = zipfile.ZIP_DEFLATED
+                    # Set UTF-8 flag
+                    zip_info.flag_bits |= 0x800
+                    # Read file content
+                    with open(file_path, 'rb') as f:
+                        content = f.read()
+                    zip_file.writestr(zip_info, content)
 
         zip_buffer.seek(0)
 
