@@ -86,12 +86,30 @@ function handleComplete(data) {
 
         const linkElem = document.getElementById('notebookLink');
         linkElem.textContent = "下载资料包 📦";
-        linkElem.href = `/api/download-zip?path=${encodeURIComponent(data.folder_path)}`;
-        linkElem.onclick = null;
-        linkElem.target = "_blank";
+        linkElem.href = "#";
+        linkElem.onclick = async (e) => {
+            e.preventDefault();
+            // Trigger download
+            window.open(`/api/download-zip?path=${encodeURIComponent(data.folder_path)}`, '_blank');
+
+            // Show message
+            addLog('ZIP下载已开始，完成后云端文件将自动清理...', 'info');
+
+            // Wait and then cleanup
+            setTimeout(async () => {
+                try {
+                    await fetch(`/api/cleanup?path=${encodeURIComponent(data.folder_path)}`);
+                    addLog('云端文件已清理', 'success');
+                } catch (err) {
+                    console.error('Cleanup error:', err);
+                }
+            }, 10000); // Cleanup after 10 seconds
+        };
+        linkElem.target = null;
 
         document.getElementById('resultDetails').innerHTML = `已经为 <b>${data.stock_name}</b> 准备好资料包。<br><br>
-        📍 路径: <code style="background:rgba(0,0,0,0.3);padding:4px 8px;border-radius:4px;word-break:break-all;">${data.folder_path}</code><br><br>
+        📦 点击下方按钮下载 ZIP 压缩包<br>
+        ⚠️ 下载完成后云端文件将自动清理以节省空间<br><br>
         内容包含：5年年报、最新季报、半年公告、及其 AI 分析指令。`;
 
         startBtn.disabled = false;

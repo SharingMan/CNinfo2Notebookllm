@@ -283,6 +283,7 @@ async def open_folder(path: str = Query(...)):
 async def download_zip(path: str = Query(...)):
     """
     Create and download a ZIP archive of the folder
+    After download, the folder will be marked for cleanup
     """
     import zipfile
     import io
@@ -312,6 +313,16 @@ async def download_zip(path: str = Query(...)):
 
         zip_buffer.seek(0)
 
+        # Schedule cleanup after response
+        async def cleanup_after_download():
+            import asyncio
+            await asyncio.sleep(5)  # Wait 5 seconds after download starts
+            cleanup_old_folders(max_age_hours=0)  # Clean immediately
+
+        # Start cleanup task
+        import asyncio
+        asyncio.create_task(cleanup_after_download())
+
         return StreamingResponse(
             zip_buffer,
             media_type="application/zip",
@@ -319,6 +330,63 @@ async def download_zip(path: str = Query(...)):
                 "Content-Disposition": f"attachment; filename={folder_name}.zip"
             }
         )
+
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+
+def cleanup_old_folders(max_age_hours=1):
+    """
+    Clean up old financial report folders to save disk space
+    Default: remove folders older than 1 hour
+    """
+    import shutil
+    import time
+
+    try:
+        cwd = os.getcwd()
+        current_time = time.time()
+
+        for item in os.listdir(cwd):
+            # Check if it's a financial report folder
+            if '_财务资料_' in item and os.path.isdir(os.path.join(cwd, item)):
+                folder_path = os.path.join(cwd, item)
+                # Get folder modification time
+                mtime = os.path.getmtime(folder_path)
+                age_hours = (current_time - mtime) / 3600
+
+                if age_hours > max_age_hours:
+                    shutil.rmtree(folder_path)
+                    print(f"Cleaned up old folder: {item}")
+
+    except Exception as e:
+        print(f"Cleanup error: {e}")
+
+
+# Run cleanup on startup
+cleanup_old_folders(max_age_hours=1)
+
+
+@app.get("/api/cleanup")
+async def cleanup_endpoint(path: str = Query(...)):
+    """
+    Clean up a specific folder after download
+    """
+    import shutil
+
+    try:
+        abs_path = os.path.abspath(os.path.expanduser(path))
+        cwd = os.getcwd()
+
+        # Security check
+        if not abs_path.startswith(cwd):
+            return {"success": False, "error": "Invalid path"}
+
+        if os.path.exists(abs_path) and '_财务资料_' in abs_path:
+            shutil.rmtree(abs_path)
+            return {"success": True, "message": f"Cleaned up: {os.path.basename(abs_path)}"}
+
+        return {"success": False, "error": "Folder not found or invalid"}
 
     except Exception as e:
         return {"success": False, "error": str(e)}
