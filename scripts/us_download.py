@@ -38,16 +38,31 @@ class USStockDownloader:
             return None
 
     def _curl_get(self, url):
-        """Standardized curl request for SEC"""
+        """Standardized curl request for SEC with better headers for Cloud compatibility"""
         import subprocess
         import json
+        # SEC requires a descriptive User-Agent. Cloud IPs are sometimes throttled.
         ua = f"{self.company} {self.email}"
-        cmd = ['curl', '-s', '-L', '-A', ua, url]
+        cmd = [
+            'curl', '-s', '-L', 
+            '-A', ua,
+            '-H', 'Accept: application/json, text/html, */*',
+            '-H', 'Accept-Language: en-US,en;q=0.9',
+            '--connect-timeout', '10',
+            url
+        ]
         try:
-            result = subprocess.run(cmd, capture_output=True, check=True, timeout=15)
+            result = subprocess.run(cmd, capture_output=True, check=True, timeout=20)
+            if not result.stdout:
+                print(f"⚠️ Curl returned empty output for {url}")
             return result.stdout
+        except subprocess.CalledProcessError as e:
+            print(f"❌ Curl command failed (code {e.returncode}) for {url}")
+            if e.stderr:
+                print(f"   Error detail: {e.stderr.decode('utf-8', errors='ignore')}")
+            return None
         except Exception as e:
-            print(f"❌ Curl failed for {url}: {e}")
+            print(f"❌ Unexpected error during curl for {url}: {e}")
             return None
 
     def download_reports(self, ticker: str, output_dir: str):
