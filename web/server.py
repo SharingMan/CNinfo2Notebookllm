@@ -323,15 +323,10 @@ async def download_zip(path: str = Query(...)):
 
         zip_buffer.seek(0)
 
-        # Schedule cleanup after response
-        async def cleanup_after_download():
-            import asyncio
-            await asyncio.sleep(5)  # Wait 5 seconds after download starts
-            cleanup_old_folders(max_age_hours=0)  # Clean immediately
-
-        # Start cleanup task
-        import asyncio
-        asyncio.create_task(cleanup_after_download())
+        # We removed the immediate cleanup here because it was too aggressive
+        # and could delete folders from other active users.
+        # Cleanup is now mainly handled by the client-side call to /api/cleanup
+        # or the periodic global cleanup with a sane timeout.
 
         # Encode filename for Content-Disposition header (RFC 5987)
         # Use safe ASCII filename for legacy clients, UTF-8 for modern clients
