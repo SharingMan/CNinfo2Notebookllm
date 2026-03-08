@@ -1,0 +1,11 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": "fastapi",
+  "installCommand": "pip install -r requirements-vercel.txt",
+  "functions": {
+    "app.py": {
+      "includeFiles": "{assets/**,scripts/**,web/static/**}",
+      "excludeFiles": "{*_财务资料_*/**,**/*财报/**,.claude/**,DEPLOY.md,Dockerfile,README.md,SKILL.md,install.sh,manual_upload.py,package.json,railway.yaml,run_stock_analysis.sh,start_web.sh,upload_reports.sh,安装完成.md}"
+    }
+  }
+}

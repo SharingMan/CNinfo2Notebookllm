@@ -1,29 +1,21 @@
 import sys
 import os
-import asyncio
 import json
-import logging
 import tempfile
 import shutil
 import datetime
 import urllib.parse
-from fastapi import FastAPI, Request, Query
+import uuid
+from fastapi import FastAPI, Query
 from fastapi.responses import StreamingResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 
 # Add the parent directory to sys.path so we can import our scripts
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'scripts'))
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, PROJECT_ROOT)
 
 from scripts.download import CnInfoDownloader
-from scripts.upload import (
-    create_notebook,
-    upload_all_sources,
-    cleanup_temp_files,
-    configure_notebook,
-    get_notebooklm_cmd
-)
 
 app = FastAPI(title="CNinfo to NotebookLM Web")
 
@@ -35,9 +27,45 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Vercel 的函数文件系统只有 /tmp 可写，本地则继续写到项目目录下。
+RUNTIME_STORAGE_ROOT = os.environ.get("CNINFO_STORAGE_ROOT") or (
+    os.path.join(tempfile.gettempdir(), "cninfo-to-notebooklm")
+    if os.environ.get("VERCEL")
+    else PROJECT_ROOT
+)
+os.makedirs(RUNTIME_STORAGE_ROOT, exist_ok=True)
+
 # Static files
 static_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static")
 app.mount("/static", StaticFiles(directory=static_path), name="static")
+
+
+def sanitize_folder_name(value: str) -> str:
+    invalid_chars = '<>:"/\\|?*'
+    sanitized = "".join("_" if ch in invalid_chars else ch for ch in value).strip()
+    return sanitized or "stock"
+
+
+def build_output_dir(stock_label: str) -> str:
+    date_str = datetime.datetime.now().strftime("%Y%m%d")
+    run_id = uuid.uuid4().hex[:8]
+    folder_name = f"{sanitize_folder_name(stock_label)}_财务资料_{date_str}_{run_id}"
+    output_dir = os.path.join(RUNTIME_STORAGE_ROOT, folder_name)
+    os.makedirs(output_dir, exist_ok=True)
+    return output_dir
+
+
+def resolve_runtime_path(path: str) -> str:
+    abs_path = os.path.abspath(os.path.expanduser(path))
+    try:
+        common_root = os.path.commonpath([abs_path, RUNTIME_STORAGE_ROOT])
+    except ValueError as exc:
+        raise ValueError("Invalid path") from exc
+
+    if common_root != RUNTIME_STORAGE_ROOT:
+        raise ValueError("Invalid path")
+
+    return abs_path
 
 @app.get("/")
 async def index():
@@ -59,20 +87,15 @@ async def analyze_task(stock_input: str):
         import re
         is_us_stock = bool(re.match(r"^[A-Za-z]{1,5}$", stock_input))
 
-        # 2. Setup environment (Persistent)
-        date_str = datetime.datetime.now().strftime("%Y%m%d")
-        output_dir = os.path.join(os.getcwd(), f"{stock_input}_财务资料_{date_str}")
-        if not os.path.exists(output_dir):
-            os.makedirs(output_dir)
-
         all_files = []
         stock_name = stock_input
 
         if is_us_stock:
+            output_dir = build_output_dir(stock_input.upper())
             # US Flow
             yield sse_message({"type": "log", "message": f"检测为美股代码: {stock_input}"})
             yield sse_message({"type": "progress", "percent": 15, "status": "正在从 SEC EDGAR 获取报告..."})
-            from us_download import USStockDownloader
+            from scripts.us_download import USStockDownloader
             us_downloader = USStockDownloader(email="user@notebooklm.app")
             try:
                 # Wrap in thread since it's blocking
@@ -92,13 +115,8 @@ async def analyze_task(stock_input: str):
                 return
 
             stock_name = stock_info.get("zwjc", stock_code)
+            output_dir = build_output_dir(stock_name)
             yield sse_message({"type": "log", "message": f"找到股票: {stock_name} ({stock_code})"})
-            
-            # Update folder name to include zwjc
-            new_output_dir = os.path.join(os.getcwd(), f"{stock_name}_财务资料_{date_str}")
-            if not os.path.exists(new_output_dir):
-                os.rename(output_dir, new_output_dir)
-                output_dir = new_output_dir
 
             current_year = datetime.datetime.now().year
             annual_years = list(range(current_year - 5, current_year))
@@ -290,13 +308,7 @@ async def download_zip(path: str = Query(...)):
     import io
 
     try:
-        # Normalize and validate path
-        abs_path = os.path.abspath(os.path.expanduser(path))
-        cwd = os.getcwd()
-
-        # Security check
-        if not abs_path.startswith(cwd):
-            return {"success": False, "error": "Invalid path"}
+        abs_path = resolve_runtime_path(path)
 
         if not os.path.exists(abs_path):
             return {"success": False, "error": "Path does not exist"}
@@ -342,6 +354,8 @@ async def download_zip(path: str = Query(...)):
             }
         )
 
+    except ValueError as e:
+        return {"success": False, "error": str(e)}
     except Exception as e:
         return {"success": False, "error": str(e)}
 
@@ -355,13 +369,12 @@ def cleanup_old_folders(max_age_hours=1):
     import time
 
     try:
-        cwd = os.getcwd()
         current_time = time.time()
 
-        for item in os.listdir(cwd):
+        for item in os.listdir(RUNTIME_STORAGE_ROOT):
             # Check if it's a financial report folder
-            if '_财务资料_' in item and os.path.isdir(os.path.join(cwd, item)):
-                folder_path = os.path.join(cwd, item)
+            if '_财务资料_' in item and os.path.isdir(os.path.join(RUNTIME_STORAGE_ROOT, item)):
+                folder_path = os.path.join(RUNTIME_STORAGE_ROOT, item)
                 # Get folder modification time
                 mtime = os.path.getmtime(folder_path)
                 age_hours = (current_time - mtime) / 3600
@@ -374,8 +387,9 @@ def cleanup_old_folders(max_age_hours=1):
         print(f"Cleanup error: {e}")
 
 
-# Run cleanup on startup
-cleanup_old_folders(max_age_hours=1)
+# 只在临时存储目录下自动清理，避免本地仓库示例数据被误删。
+if RUNTIME_STORAGE_ROOT != PROJECT_ROOT:
+    cleanup_old_folders(max_age_hours=1)
 
 
 @app.get("/api/cleanup")
@@ -386,12 +400,7 @@ async def cleanup_endpoint(path: str = Query(...)):
     import shutil
 
     try:
-        abs_path = os.path.abspath(os.path.expanduser(path))
-        cwd = os.getcwd()
-
-        # Security check
-        if not abs_path.startswith(cwd):
-            return {"success": False, "error": "Invalid path"}
+        abs_path = resolve_runtime_path(path)
 
         if os.path.exists(abs_path) and '_财务资料_' in abs_path:
             shutil.rmtree(abs_path)
@@ -399,6 +408,8 @@ async def cleanup_endpoint(path: str = Query(...)):
 
         return {"success": False, "error": "Folder not found or invalid"}
 
+    except ValueError as e:
+        return {"success": False, "error": str(e)}
     except Exception as e:
         return {"success": False, "error": str(e)}
 
