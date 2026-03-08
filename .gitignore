@@ -16,3 +16,5 @@ output/
 # OS
 .DS_Store
 tests/test_download.py
+.vercel
+.env*.local
